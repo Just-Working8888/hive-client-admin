@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return match ? [match] : ["/dashboard"]
   }, [pathname])
 
-  const menu = (
+  const menu:any = (
     <Menu
       items={[
         { key: "profile", label: <Link href="/profile">Профиль</Link>, icon: <UserOutlined /> },
@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   allowClear
                 />
                 <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} />
-                <Dropdown overlay={menu} trigger={["click"]}>
+                <Dropdown menu={menu} trigger={["click"]}>
                   <Space className="cursor-pointer">
                     <Avatar size="small" icon={<UserOutlined />} />
                     <span>{user?.email || user?.username || "Аккаунт"}</span>

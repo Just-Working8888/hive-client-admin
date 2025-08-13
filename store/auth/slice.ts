@@ -100,6 +100,8 @@ export const doLogout = createAsyncThunk<void, void, { rejectValue: string }>(
   async (_, { dispatch }) => {
     try {
       await authApi.logout()
+      
+        window.location.href = "/login"
     } catch {}
     dispatch(setTokens({ accessToken: undefined, refreshToken: undefined }))
     dispatch(setUser(undefined))

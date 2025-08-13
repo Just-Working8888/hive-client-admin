@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import { Card, Form, Input, Button, Typography, Divider, Alert, Space, Checkbox } from "antd"
 import Link from "next/link"
 import { LockOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons"
@@ -15,9 +15,11 @@ export default function Page() {
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
 
+  
   useEffect(() => {
-    if (accessToken || (!useOAuthTokenLogin && baseUrl)) {
-      // window.location.href = "/dashboard"
+    // if (accessToken || (!useOAuthTokenLogin && baseUrl)) {      
+    if (accessToken) { 
+      window.location.href = "/dashboard"
     }
   }, [accessToken, useOAuthTokenLogin, baseUrl])
 
@@ -27,7 +29,7 @@ export default function Page() {
     setLoading(true)
     try {
       await dispatch(loginWithPassword({ username: values.username, password: values.password })).unwrap()
-      // window.location.href = "/dashboard"
+      window.location.href = "/dashboard"
     } catch {
       // error handled by slice; show alert via below
     } finally {

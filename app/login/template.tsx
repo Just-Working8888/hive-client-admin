@@ -1,4 +1,4 @@
-"use client"
+    "use client"
 import LayoutClient from "../layout-client"
 import type React from "react"
 
