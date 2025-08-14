@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return match ? [match] : ["/dashboard"]
   }, [pathname])
 
-  const menu = (
+  const menu:any = (
     <Menu
       items={[
         { key: "profile", label: <Link href="/profile">Профиль</Link>, icon: <UserOutlined /> },

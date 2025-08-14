@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import { Card, Form, Input, Button, Typography, Divider, Alert, Space, Checkbox } from "antd"
 import Link from "next/link"
 import { LockOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons"
@@ -15,10 +15,12 @@ export default function Page() {
   const [loading, setLoading] = useState(false)
   const [form] = Form.useForm()
 
+  
   useEffect(() => {
-    if (accessToken || (!useOAuthTokenLogin && baseUrl)) {
-      // window.location.href = "/dashboard"
-    }
+    // if (accessToken || (!useOAuthTokenLogin && baseUrl)) {      
+    // if (accessToken) { 
+    //   window.location.href = "/dashboard"
+    // }
   }, [accessToken, useOAuthTokenLogin, baseUrl])
 
   const canUseOAuth = useMemo(() => Boolean(clientId && clientSecret), [clientId, clientSecret])
@@ -27,7 +29,7 @@ export default function Page() {
     setLoading(true)
     try {
       await dispatch(loginWithPassword({ username: values.username, password: values.password })).unwrap()
-      // window.location.href = "/dashboard"
+      window.location.href = "/dashboard"
     } catch {
       // error handled by slice; show alert via below
     } finally {
@@ -39,8 +41,8 @@ export default function Page() {
     <div className="flex min-h-[100dvh] items-center justify-center px-4 py-10 bg-[rgb(245,247,250)]">
       <Card
         className="w-full max-w-md"
-        bordered={false}
-        style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)", borderRadius: 16 }}
+        // bordered={false}
+        style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)", borderRadius: 16, border: "none" }}
       >
         <Space direction="vertical" size={16} className="w-full">
           <div className="text-center">
@@ -75,12 +77,12 @@ export default function Page() {
                   value={baseUrl}
                   onChange={(e) => dispatch(setBaseUrl(e.target.value))}
                 />
-                <Checkbox
-                  checked={useOAuthTokenLogin}
-                  onChange={(e) => dispatch(setUseOAuthTokenLogin(e.target.checked))}
-                >
-                  Использовать OAuth /oauth/token (рекомендуется)
-                </Checkbox>
+              <Checkbox
+  checked={useOAuthTokenLogin}
+  onChange={(e) => dispatch(setUseOAuthTokenLogin(e.target.checked))}
+>
+  Использовать OAuth /oauth/token (рекомендуется)
+</Checkbox>
                 {useOAuthTokenLogin && (
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <Input
