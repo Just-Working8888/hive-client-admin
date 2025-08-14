@@ -27,6 +27,15 @@ export const authApi = {
   companies: () => api.get<CompanyRead[]>("/users/companies"),
 }
 
+type PaginatedResponse<T> = {
+  items: T[];
+  page: number;
+  pages: number;
+  size: number;
+  total: number;
+  has_next: boolean;
+  has_prev: boolean;
+};
 // Users
 export const usersApi = {
   list: () => api.get<UserRead[]>("/users"),
@@ -35,6 +44,12 @@ export const usersApi = {
     api.patch(`/users/${userId}/reset-password`, { new_password }),
   addRole: (userId: string, roleId: number) => api.patch(`/users/${userId}/add-role/${roleId}`),
   delete: (userId: string) => api.delete(`/users/${userId}`),
+  listPaginated: (params?: string) => 
+    api.get<PaginatedResponse<any>>(`/users${params ? `?${params}` : ''}`),
+  searchSuggestions: (query: string, limit: number = 5) => 
+    api.get<{id: string; email: string; name: string;
+}[]>(`/users/search/suggestions?query=${encodeURIComponent(query)}&limit=${limit}`),
+  
 }
 
 // Companies
