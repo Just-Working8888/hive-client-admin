@@ -25,9 +25,9 @@ const initialState: AuthState = {
   clientId: typeof window !== "undefined" ? localStorage.getItem(storageKeys.clientId) || undefined : undefined,
   clientSecret: typeof window !== "undefined" ? localStorage.getItem(storageKeys.clientSecret) || undefined : undefined,
   useOAuthTokenLogin:
-    typeof window !== "undefined"
-      ? localStorage.getItem(storageKeys.useOAuth) === "1" || localStorage.getItem(storageKeys.useOAuth) === null
-      : true,
+    // typeof window !== "undefined"
+      // ? localStorage.getItem(storageKeys.useOAuth) === "1" || localStorage.getItem(storageKeys.useOAuth) === null
+     false,
   accessToken: typeof window !== "undefined" ? localStorage.getItem(storageKeys.accessToken) || undefined : undefined,
   refreshToken: typeof window !== "undefined" ? localStorage.getItem(storageKeys.refreshToken) || undefined : undefined,
   companyId: typeof window !== "undefined" ? localStorage.getItem(storageKeys.companyId) || undefined : undefined,

@@ -171,7 +171,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   allowClear
                 />
                 <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)} />
-                <Dropdown menu={menu} trigger={["click"]}>
+                <Dropdown overlay={menu} trigger={["click"]}>
                   <Space className="cursor-pointer">
                     <Avatar size="small" icon={<UserOutlined />} />
                     <span>{user?.email || user?.username || "Аккаунт"}</span>

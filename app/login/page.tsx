@@ -18,9 +18,9 @@ export default function Page() {
   
   useEffect(() => {
     // if (accessToken || (!useOAuthTokenLogin && baseUrl)) {      
-    if (accessToken) { 
-      window.location.href = "/dashboard"
-    }
+    // if (accessToken) { 
+    //   window.location.href = "/dashboard"
+    // }
   }, [accessToken, useOAuthTokenLogin, baseUrl])
 
   const canUseOAuth = useMemo(() => Boolean(clientId && clientSecret), [clientId, clientSecret])
@@ -41,8 +41,8 @@ export default function Page() {
     <div className="flex min-h-[100dvh] items-center justify-center px-4 py-10 bg-[rgb(245,247,250)]">
       <Card
         className="w-full max-w-md"
-        bordered={false}
-        style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)", borderRadius: 16 }}
+        // bordered={false}
+        style={{ boxShadow: "0 10px 30px rgba(0,0,0,0.08)", borderRadius: 16, border: "none" }}
       >
         <Space direction="vertical" size={16} className="w-full">
           <div className="text-center">
@@ -77,12 +77,12 @@ export default function Page() {
                   value={baseUrl}
                   onChange={(e) => dispatch(setBaseUrl(e.target.value))}
                 />
-                <Checkbox
-                  checked={useOAuthTokenLogin}
-                  onChange={(e) => dispatch(setUseOAuthTokenLogin(e.target.checked))}
-                >
-                  Использовать OAuth /oauth/token (рекомендуется)
-                </Checkbox>
+              <Checkbox
+  checked={useOAuthTokenLogin}
+  onChange={(e) => dispatch(setUseOAuthTokenLogin(e.target.checked))}
+>
+  Использовать OAuth /oauth/token (рекомендуется)
+</Checkbox>
                 {useOAuthTokenLogin && (
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <Input
