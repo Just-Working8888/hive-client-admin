@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Button,
   Card,
@@ -26,6 +27,7 @@ import {
   PlusOutlined,
   SearchOutlined,
   ReloadOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
 import { debounce } from "lodash";
 
@@ -66,7 +68,6 @@ type UserFilters = {
   search?: string;
   is_active?: boolean;
   is_verified?: boolean;
-  department?: string;
   sort_by?: 'created_at' | 'email' | 'first_name' | 'last_name';
   sort_order?: 'asc' | 'desc';
 };
@@ -82,6 +83,7 @@ const { confirm } = Modal;
 const { Option } = Select;
 
 export default function Page() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<PaginatedResponse<UserRead>>({
     items: [],
@@ -120,7 +122,6 @@ export default function Page() {
         ...(typeof filterParams.is_verified === 'boolean' && { 
           is_verified: filterParams.is_verified.toString() 
         }),
-        ...(filterParams.department && { department: filterParams.department }),
         ...(filterParams.sort_by && { sort_by: filterParams.sort_by }),
         ...(filterParams.sort_order && { sort_order: filterParams.sort_order }),
       });
@@ -164,6 +165,10 @@ export default function Page() {
   useEffect(() => {
     load(currentPage, pageSize, filters);
   }, [currentPage, pageSize, filters]);
+
+  const viewUserDetails = (userId: string) => {
+    router.push(`/users/${userId}`);
+  };
 
   const openEdit = (u: UserRead) => {
     setCurrent(u);
@@ -372,12 +377,6 @@ export default function Page() {
             </Col>
             
             <Col xs={24} sm={12} md={8} lg={6}>
-              <Form.Item name="department" label="Отдел">
-                <Input placeholder="IT, HR, Sales..." allowClear />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12} md={8} lg={6}>
               <Form.Item name="sort_by" label="Сортировка">
                 <Select placeholder="По умолчанию" allowClear>
                   <Option value="created_at">По дате создания</Option>
@@ -440,6 +439,10 @@ export default function Page() {
               setCurrentPage(1);
             }
           }}
+          onRow={(record) => ({
+            onClick: () => viewUserDetails(record.id),
+            style: { cursor: 'pointer' },
+          })}
           columns={[
             { 
               title: "ID", 
@@ -491,20 +494,51 @@ export default function Page() {
             {
               title: "Действия",
               fixed: "right",
-              width: 320,
+              width: 400,
               render: (_, r) => (
                 <Space wrap>
-                  <Button onClick={() => openEdit(r)}>Изменить</Button>
+                  <Button 
+                    icon={<EyeOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      viewUserDetails(r.id);
+                    }}
+                  >
+                    Детали
+                  </Button>
+                  <Button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(r);
+                    }}
+                  >
+                    Изменить
+                  </Button>
                   <Button
                     icon={<KeyOutlined />}
-                    onClick={() => resetPassword(r)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      resetPassword(r);
+                    }}
                   >
                     Сброс пароля
                   </Button>
-                  <Button icon={<PlusOutlined />} onClick={() => addRole(r)}>
+                  <Button 
+                    icon={<PlusOutlined />} 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addRole(r);
+                    }}
+                  >
                     Роль
                   </Button>
-                  <Button danger onClick={() => removeUser(r)}>
+                  <Button 
+                    danger 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeUser(r);
+                    }}
+                  >
                     Удалить
                   </Button>
                 </Space>
