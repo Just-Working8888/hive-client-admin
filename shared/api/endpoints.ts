@@ -66,6 +66,12 @@ export const companiesApi = {
     api.patch(`/users/companies/${companyId}/memberships/${membershipId}/approve`),
   dismissMembership: (companyId: string, membershipId: string) =>
     api.patch(`/users/companies/${companyId}/memberships/${membershipId}/dismiss`),
+  listPaginated: (params?: string) => 
+    api.get<PaginatedResponse<any>>(`/users/companies${params ? `?${params}` : ''}`),
+  searchSuggestions: (query: string, limit: number = 5) => 
+    api.get<{id: string; email: string; name: string;
+}[]>(`/users/search/suggestions?query=${encodeURIComponent(query)}&limit=${limit}`),
+  
 }
 
 // Roles and permissions

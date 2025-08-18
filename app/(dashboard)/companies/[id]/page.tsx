@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   Button,
   Card,
@@ -20,13 +20,12 @@ import {
   Avatar,
   Tooltip,
   Badge,
-  Table
+  Table,
 } from "antd";
 import {
   ArrowLeftOutlined,
   BuildOutlined,
   TeamOutlined,
-  CalendarOutlined,
   EditOutlined,
   HistoryOutlined,
   UserOutlined,
@@ -34,15 +33,11 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   StopOutlined,
-  KeyOutlined,
-  PlusOutlined,
-  EyeOutlined,
 } from "@ant-design/icons";
 import { companiesApi } from "@/shared/api/endpoints";
 
 const { Title, Text, Paragraph } = Typography;
 
-// Типизация данных компании
 type CompanyDetails = {
   id: string;
   name: string;
@@ -63,14 +58,11 @@ type CompanyDetails = {
 
 export default function CompanyDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const companyId = params.id as string;
 
   const [loading, setLoading] = useState(true);
   const [company, setCompany] = useState<CompanyDetails | null>(null);
-  const [memberships, setMemberships] = useState<any[]>([]);
 
-  // Загрузка деталей компании
   const loadCompanyDetails = async () => {
     if (!companyId) return;
 
@@ -79,17 +71,6 @@ export default function CompanyDetailsPage() {
       const response = await companiesApi.getById(companyId);
       setCompany(response.data);
     } catch (error: any) {
-      console.error("Ошибка загрузки деталей компании:", error);
-      message.error(error.message || "Не удалось загрузить данные компании");
-    } finally {
-      setLoading(false);
-    }
-
-    try {
-      const response = await companiesApi.memberships(companyId);
-      setMemberships(response.data);
-    } catch (error: any) {
-      console.error("Ошибка загрузки деталей компании:", error);
       message.error(error.message || "Не удалось загрузить данные компании");
     } finally {
       setLoading(false);
@@ -100,7 +81,6 @@ export default function CompanyDetailsPage() {
     loadCompanyDetails();
   }, [companyId]);
 
-  // Форматирование даты
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleString("ru-RU", {
@@ -112,7 +92,6 @@ export default function CompanyDetailsPage() {
     });
   };
 
-  // Форматирование относительного времени
   const formatRelativeTime = (dateString: string) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
@@ -126,19 +105,6 @@ export default function CompanyDetailsPage() {
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} нед. назад`;
     if (diffDays < 365) return `${Math.floor(diffDays / 30)} мес. назад`;
     return `${Math.floor(diffDays / 365)} г. назад`;
-  };
-
-  const getRoleColor = (role?: string) => {
-    switch (role) {
-      case "admin":
-        return "red";
-      case "manager":
-        return "blue";
-      case "member":
-        return "green";
-      default:
-        return "default";
-    }
   };
 
   const getStatusColor = (status?: string) => {
@@ -195,26 +161,18 @@ export default function CompanyDetailsPage() {
           </Breadcrumb.Item>
           <Breadcrumb.Item>{company.name}</Breadcrumb.Item>
         </Breadcrumb>
-<br />
+        <br />
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
-                <Avatar
-                  size={64}
-                  icon={<BuildOutlined />}
-                  className="bg-blue-500 flex-shrink-0"
-                />
                 <div className="min-w-0">
                   <Title level={2} className="!mb-0 !text-2xl lg:!text-3xl">
                     {company.name}
                   </Title>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {company.user_role && (
-                      <Tag
-                        color={getRoleColor(company.user_role)}
-                        icon={<CrownOutlined />}
-                      >
+                      <Tag color="blue" icon={<CrownOutlined />}>
                         {company.user_role === "admin"
                           ? "Администратор"
                           : company.user_role === "manager"
@@ -246,9 +204,6 @@ export default function CompanyDetailsPage() {
 
             <div className="flex gap-2">
               <Button icon={<EditOutlined />}>Редактировать</Button>
-              <Button type="primary" icon={<TeamOutlined />}>
-                Участники
-              </Button>
             </div>
           </div>
         </div>
@@ -284,7 +239,7 @@ export default function CompanyDetailsPage() {
               </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} lg={6}>
+          {/* <Col xs={24} sm={12} lg={6}>
             <Card className="text-center h-full">
               <div className="text-sm text-gray-500 mb-2">Обновлена</div>
               <div className="text-2xl font-semibold text-gray-900">
@@ -294,7 +249,7 @@ export default function CompanyDetailsPage() {
                 {formatDate(company.updated_at)}
               </div>
             </Card>
-          </Col>
+          </Col> */}
         </Row>
 
         <Row gutter={[24, 24]}>
@@ -370,15 +325,8 @@ export default function CompanyDetailsPage() {
                           <Text strong className="block mb-1">
                             Ваша роль
                           </Text>
-                          <Tag
-                            color={getRoleColor(company.user_role)}
-                            icon={<CrownOutlined />}
-                          >
-                            {company.user_role === "admin"
-                              ? "Администратор"
-                              : company.user_role === "manager"
-                              ? "Менеджер"
-                              : "Участник"}
+                          <Tag color="blue" icon={<CrownOutlined />}>
+                            {company.user_role}
                           </Tag>
                         </div>
                       )}
@@ -506,8 +454,6 @@ export default function CompanyDetailsPage() {
                   </div>
                 </div>
               </Card>
-
-             
             </Space>
           </Col>
         </Row>

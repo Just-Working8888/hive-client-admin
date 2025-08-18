@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button,
@@ -11,10 +11,8 @@ import {
   Modal,
   Space,
   Table,
-  Tag,
   Typography,
   message,
-  Pagination,
 } from "antd";
 import { companiesApi } from "@/shared/api/endpoints";
 import {
@@ -25,126 +23,55 @@ import {
 
 // Типизация данных
 type CompanyRead = {
-  id: string
-  name: string
-  description?: string | null
-  created_at: string
-  updated_at: string
-  members_count?: number
-  services_count?: number
-  user_role?: string
-  user_membership_status?: string
-}
+  id: string;
+  name: string;
+  description?: string | null;
+  created_at: string;
+  updated_at: string;
+  members_count?: number;
+  services_count?: number;
+  user_role?: string;
+  user_membership_status?: string;
+};
 
-type MembershipRead = {
-  id: string
-  user_id: string
-  company_id: string
-  role_id: number
-  status: string
-  created_at: string | null
-  updated_at: string | null
-  user_email?: string
-  user_name?: string
-  role_name?: string
-}
-
-// // Типизация ответа API с пагинацией
 type CompanyListResponse = {
-  items: CompanyRead[]
-  total: number
-  page: number
-  size: number
-  pages: number
-}
-
-type MembershipListResponse = {
-  items: MembershipRead[]
-  total: number
-  page: number
-  size: number
-  pages: number
-}
+  items: CompanyRead[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+};
 
 const { Title, Text } = Typography;
 const { confirm } = Modal;
 
 export default function Page() {
   const router = useRouter();
-  
-  // Состояние для компаний
+
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<CompanyRead[]>([]);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
-
-  // Состояние для модальных окон
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState<any>(null);
+  const [current, setCurrent] = useState<CompanyRead | null>(null);
   const [form] = Form.useForm();
 
-  // Состояние для участников
-  const [membersOpen, setMembersOpen] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [membersTotal, setMembersTotal] = useState(0);
-  const [membersPage, setMembersPage] = useState(1);
-  const [membersPageSize, setMembersPageSize] = useState(10);
-  const [membersLoading, setMembersLoading] = useState(false);
-
-  // Загрузка компаний с пагинацией
-  const load = async (
-    page: number = currentPage,
-    size: number = pageSize,
-    searchQuery: string = search
-  ) => {
+  const load = async (page = currentPage, size = pageSize, searchValue = search) => {
     setLoading(true);
     try {
-      // Если API поддерживает пагинацию, передаем параметры
-      const params: any = {
-        page,
-        size,
-        ...(searchQuery && { search: searchQuery }),
-      };
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        ...(searchValue && { search: searchValue }),
+      });
 
-      const response = await companiesApi.list();
-
-      // Проверяем, что пришло в ответе
-      if (
-        response.data &&
-        typeof response.data === "object" &&
-        "items" in response.data
-      ) {
-        // Если API возвращает структуру с пагинацией
-        const paginatedData: any = response.data;
-        setData(paginatedData.items);
-        setTotal(paginatedData.total);
-      } else {
-        // Если API возвращает просто массив, применяем пагинацию на клиенте
-        const companies = Array.isArray(response.data) ? response.data : [];
-
-        // Фильтрация для поиска
-        const filtered = searchQuery
-          ? companies.filter((c: any) =>
-              [c.name, c.description, c.id]
-                .filter(Boolean)
-                .some((v) =>
-                  String(v).toLowerCase().includes(searchQuery.toLowerCase())
-                )
-            )
-          : companies;
-
-        // Пагинация на клиенте
-        const startIndex = (page - 1) * size;
-        const endIndex = startIndex + size;
-        const paginatedItems: any = filtered.slice(startIndex, endIndex);
-
-        setData(paginatedItems);
-        setTotal(filtered.length);
-      }
+      const response = await companiesApi.listPaginated(params.toString());
+      const paginatedData: CompanyListResponse = response.data;
+      setData(paginatedData.items);
+      setTotal(paginatedData.total);
     } catch (e: any) {
-      console.error("Ошибка загрузки компаний:", e);
       message.error(e.message || "Не удалось загрузить компании");
       setData([]);
       setTotal(0);
@@ -153,79 +80,17 @@ export default function Page() {
     }
   };
 
-  // Загрузка участников с пагинацией
-  const loadMembers = async (
-    companyId: string,
-    page: number = 1,
-    size: number = 10
-  ) => {
-    setMembersLoading(true);
-    try {
-      // const params = { page, size }
-      const response = await companiesApi.memberships(companyId);
-
-      if (
-        response.data &&
-        typeof response.data === "object" &&
-        "items" in response.data
-      ) {
-        const paginatedData = response.data;
-        setMembers(paginatedData.items);
-        setMembersTotal(paginatedData.total);
-      } else {
-        const memberships: any = Array.isArray(response.data)
-          ? response.data
-          : [];
-        setMembers(memberships);
-        setMembersTotal(memberships.length);
-      }
-    } catch (e: any) {
-      console.error("Ошибка загрузки участников:", e);
-      message.error("Не удалось загрузить участников");
-      setMembers([]);
-      setMembersTotal(0);
-    } finally {
-      setMembersLoading(false);
-    }
-  };
-
   useEffect(() => {
     load();
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, search]);
 
-  // Обработчик поиска
   const handleSearch = (searchValue: string) => {
     setSearch(searchValue);
-    setCurrentPage(1); // Сброс на первую страницу при поиске
+    setCurrentPage(1);
     load(1, pageSize, searchValue);
   };
 
-  // Обработчик изменения страницы
-  const handlePageChange = (page: number, size?: number) => {
-    setCurrentPage(page);
-    if (size && size !== pageSize) {
-      setPageSize(size);
-      load(page, size, search);
-    } else {
-      load(page, pageSize, search);
-    }
-  };
-
-  // Обработчик изменения страницы участников
-  const handleMembersPageChange = (page: number, size?: number) => {
-    setMembersPage(page);
-    if (size && size !== membersPageSize) {
-      setMembersPageSize(size);
-    }
-    if (current) {
-      loadMembers(current.id, page, size || membersPageSize);
-    }
-  };
-
-  // Обработчик клика по строке
-  const handleRowClick = (record: CompanyRead) => {
-    router.push(`/companies/${record.id}`);
-  };
+  const handleRowClick = (record: CompanyRead) => router.push(`/companies/${record.id}`);
 
   const openCreate = () => {
     setCurrent(null);
@@ -233,8 +98,8 @@ export default function Page() {
     setOpen(true);
   };
 
-  const openEdit = (c:any, e: React.MouseEvent) => {
-    e.stopPropagation(); // Предотвращаем переход на деталку при клике на кнопку редактирования
+  const openEdit = (c: CompanyRead, e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrent(c);
     form.setFieldsValue({ name: c.name, description: c.description || "" });
     setOpen(true);
@@ -251,14 +116,14 @@ export default function Page() {
         message.success("Компания создана");
       }
       setOpen(false);
-      await load(); // Перезагружаем текущую страницу
+      await load();
     } catch (error) {
-      console.error("Ошибка сохранения:", error);
+      message.error("Ошибка при сохранении компании");
     }
   };
 
   const removeCompany = (c: CompanyRead, e: React.MouseEvent) => {
-    e.stopPropagation(); // Предотвращаем переход на деталку при клике на кнопку удаления
+    e.stopPropagation();
     confirm({
       title: "Удалить компанию?",
       icon: <ExclamationCircleOutlined />,
@@ -268,43 +133,19 @@ export default function Page() {
         try {
           await companiesApi.delete(c.id);
           message.success("Компания удалена");
-          await load(); // Перезагружаем текущую страницу
+          await load();
         } catch (error) {
-          console.error("Ошибка удаления:", error);
+          message.error("Ошибка при удалении компании");
         }
       },
     });
   };
 
   const openMembers = async (c: CompanyRead, e: React.MouseEvent) => {
-    e.stopPropagation(); // Предотвращаем переход на деталку при клике на кнопку участников
+    e.stopPropagation();
     setCurrent(c);
-    setMembersPage(1);
-    setMembersOpen(true);
-    await loadMembers(c.id, 1, membersPageSize);
   };
 
-  const approveMembership = async (m: MembershipRead) => {
-    try {
-      await companiesApi.approveMembership(m.company_id, m.id);
-      message.success("Участие одобрено");
-      await loadMembers(current!.id, membersPage, membersPageSize);
-    } catch (error) {
-      console.error("Ошибка одобрения:", error);
-    }
-  };
-
-  const dismissMembership = async (m: MembershipRead) => {
-    try {
-      await companiesApi.dismissMembership(m.company_id, m.id);
-      message.success("Участие отклонено");
-      await loadMembers(current!.id, membersPage, membersPageSize);
-    } catch (error) {
-      console.error("Ошибка отклонения:", error);
-    }
-  };
-
-  // Форматирование даты
   const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleString("ru-RU", {
@@ -344,11 +185,28 @@ export default function Page() {
           rowKey="id"
           loading={loading}
           dataSource={data}
-          pagination={false} // Отключаем встроенную пагинацию таблицы
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            total: total,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} из ${total} компаний`,
+            pageSizeOptions: ["10", "20", "50", "100"],
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
+            },
+            onShowSizeChange: (current, size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+          }}
           onRow={(record) => ({
             onClick: () => handleRowClick(record),
-            style: { cursor: 'pointer' },
-            className: 'hover:bg-gray-50'
+            style: { cursor: "pointer" },
+            className: "hover:bg-gray-50",
           })}
           columns={[
             {
@@ -374,7 +232,7 @@ export default function Page() {
                 </div>
               ),
             },
-            ...(data.some((item:any) => item.members_count !== undefined)
+            ...(data.some((item) => item.members_count !== undefined)
               ? [
                   {
                     title: "Участники",
@@ -414,30 +272,8 @@ export default function Page() {
           ]}
           scroll={{ x: 900 }}
         />
-
-        {/* Кастомная пагинация */}
-        <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-500">
-            Показано {data.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-
-            {Math.min(currentPage * pageSize, total)} из {total}
-          </div>
-          <Pagination
-            current={currentPage}
-            pageSize={pageSize}
-            total={total}
-            onChange={handlePageChange}
-            showSizeChanger
-            showQuickJumper
-            pageSizeOptions={["10", "20", "50", "100"]}
-            showTotal={(total, range) =>
-              `${range[0]}-${range[1]} из ${total} записей`
-            }
-            size="default"
-          />
-        </div>
       </Card>
 
-      {/* Drawer для создания/редактирования компании */}
       <Drawer
         title={current ? "Изменить компанию" : "Создать компанию"}
         open={open}
@@ -446,7 +282,6 @@ export default function Page() {
           520,
           typeof window !== "undefined" ? window.innerWidth - 40 : 520
         )}
-        destroyOnClose
         extra={
           <Space>
             <Button onClick={() => setOpen(false)}>Отмена</Button>
@@ -476,125 +311,6 @@ export default function Page() {
             <Input.TextArea rows={4} placeholder="Краткое описание" />
           </Form.Item>
         </Form>
-      </Drawer>
-
-      {/* Drawer для участников */}
-      <Drawer
-        title={`Участники: ${current?.name || ""}`}
-        open={membersOpen}
-        onClose={() => setMembersOpen(false)}
-        width={Math.min(
-          720,
-          typeof window !== "undefined" ? window.innerWidth - 40 : 720
-        )}
-      >
-        <Table<MembershipRead>
-          rowKey="id"
-          loading={membersLoading}
-          dataSource={members}
-          pagination={false}
-          columns={[
-            {
-              title: "ID",
-              dataIndex: "id",
-              width: 200,
-              ellipsis: true,
-              render: (text) => (
-                <span className="font-mono text-xs">{text}</span>
-              ),
-            },
-            {
-              title: "User ID",
-              dataIndex: "user_id",
-              width: 200,
-              ellipsis: true,
-              render: (text) => (
-                <span className="font-mono text-xs">{text}</span>
-              ),
-            },
-            {
-              title: "Роль",
-              dataIndex: "role_id",
-              width: 80,
-              render: (roleId, record) => record.role_name || `Role ${roleId}`,
-            },
-            {
-              title: "Статус",
-              dataIndex: "status",
-              width: 100,
-              render: (status) => (
-                <Tag
-                  color={
-                    status === "active"
-                      ? "green"
-                      : status === "pending"
-                      ? "orange"
-                      : status === "suspended"
-                      ? "red"
-                      : "default"
-                  }
-                >
-                  {status === "active"
-                    ? "Активен"
-                    : status === "pending"
-                    ? "Ожидает"
-                    : status === "suspended"
-                    ? "Заблокирован"
-                    : status}
-                </Tag>
-              ),
-            },
-            {
-              title: "Создано",
-              dataIndex: "created_at",
-              width: 160,
-              render: formatDate,
-            },
-            {
-              title: "Действия",
-              fixed: "right" as const,
-              width: 180,
-              render: (_, member) => (
-                <Space>
-                  {member.status === "pending" && (
-                    <Button
-                      size="small"
-                      onClick={() => approveMembership(member)}
-                    >
-                      Одобрить
-                    </Button>
-                  )}
-                  <Button
-                    size="small"
-                    danger
-                    onClick={() => dismissMembership(member)}
-                  >
-                    {member.status === "pending" ? "Отклонить" : "Исключить"}
-                  </Button>
-                </Space>
-              ),
-            },
-          ]}
-          scroll={{ x: 800 }}
-        />
-
-        {/* Пагинация для участников */}
-        {membersTotal > 0 && (
-          <div className="mt-4 flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              Участников: {membersTotal}
-            </div>
-            <Pagination
-              current={membersPage}
-              pageSize={membersPageSize}
-              total={membersTotal}
-              onChange={handleMembersPageChange}
-              showSizeChanger
-              pageSizeOptions={["10", "20", "50"]}
-              size="small"
-            />
-          </div>
-        )}
       </Drawer>
     </Space>
   );

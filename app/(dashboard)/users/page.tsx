@@ -108,7 +108,6 @@ export default function Page() {
   const [roleForm] = Form.useForm();
   const [filtersForm] = Form.useForm();
 
-  // Обновленная функция загрузки с параметрами
   const load = async (page = currentPage, size = pageSize, filterParams: UserFilters = filters) => {
     setLoading(true);
     try {
@@ -142,7 +141,6 @@ export default function Page() {
     } catch {}
   };
 
-  // Автодополнение для поиска
   const loadSuggestions = debounce(async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setSuggestions([]);
@@ -278,14 +276,12 @@ export default function Page() {
     });
   };
 
-  // Обработка поиска
   const handleSearch = (value: string) => {
     setSearchValue(value);
     setFilters(prev => ({ ...prev, search: value || undefined }));
     setCurrentPage(1);
   };
 
-  // Обработка фильтров
   const handleFiltersChange = (changedValues: any, allValues: any) => {
     const newFilters: UserFilters = {
       ...filters,
@@ -297,7 +293,6 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  // Сброс фильтров
   const resetFilters = () => {
     filtersForm.resetFields();
     setFilters({});
@@ -305,13 +300,11 @@ export default function Page() {
     setCurrentPage(1);
   };
 
-  // Обработка выбора из автодополнения
   const handleSuggestionSelect = (value: string, option: any) => {
     setSearchValue(option.email);
     handleSearch(option.email);
   };
 
-  // Опции для автодополнения
   const suggestionOptions = suggestions.map(suggestion => ({
     value: suggestion.id,
     label: `${suggestion.email} - ${suggestion.name}`,
