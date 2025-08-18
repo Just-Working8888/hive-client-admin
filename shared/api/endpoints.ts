@@ -56,6 +56,7 @@ export const usersApi = {
 // Companies
 export const companiesApi = {
   list: () => api.get<CompanyRead[]>("/users/companies"),
+  getById: (id: string) => api.get<CompanyRead>(`/users/companies/${id}`),
   create: (payload: { name: string; description?: string | null }) => api.post("/users/companies", payload),
   update: (id: string, payload: { name?: string | null; description?: string | null }) =>
     api.patch(`/users/companies/${id}`, payload),

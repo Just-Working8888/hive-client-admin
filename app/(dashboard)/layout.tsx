@@ -164,7 +164,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="flex items-center gap-2">
                 <Select
                   placeholder="Компания"
-                  options={companies.map((c) => ({ label: c.name, value: c.id }))}
+                  options={companies?.items?.map((c:any) => ({ label: c.name, value: c.id }))}
                   className="min-w-[180px]"
                   value={companyId}
                   onChange={(v) => dispatch(setCompanyId(v))}

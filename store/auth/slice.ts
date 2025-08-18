@@ -2,7 +2,7 @@
 
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
 import { storageKeys } from "@/shared/config/storage"
-import type { UserRead, CompanyRead } from "@/entities/user/types"
+import type { UserRead, CompanyRead, CompanyData } from "@/entities/user/types"
 import { authApi } from "@/shared/api/endpoints"
 import type { RootState } from ".."
 
@@ -15,7 +15,7 @@ type AuthState = {
   refreshToken?: string
   companyId?: string
   user?: UserRead
-  companies: CompanyRead[]
+  companies: any
   loading: boolean
   error?: string
 }
