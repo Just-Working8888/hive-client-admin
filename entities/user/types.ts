@@ -25,3 +25,12 @@ export type CompanyRead = {
   created_at: string
   updated_at: string
 }
+
+
+export type CompanyData = {
+  items: CompanyRead[]
+  page: number
+  pages: number
+  size: number
+  total: number
+}
